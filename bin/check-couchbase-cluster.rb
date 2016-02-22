@@ -63,6 +63,12 @@ class CheckCouchbaseCluster < Sensu::Plugin::Check::CLI
          long: '--version VERSION',
          proc: proc(&:to_f)
 
+  option :couchbase_alerts,
+         description: 'Couchbase alerts check',
+         long: '--alerts',
+         boolean: true,
+         default: true
+
   def run
     begin
       resource = '/pools/nodes'
@@ -101,9 +107,11 @@ class CheckCouchbaseCluster < Sensu::Plugin::Check::CLI
     nodes_unactive = results[:nodes].select { |node| node[:clusterMembership] != 'active' }
     critical "These nodes are not 'active' in the cluster: #{nodes_unactive.map { |node| node[:hostname] }}" if nodes_unactive.size > 0
 
-    critical "Cluster #{results[:alerts].size} alert(s)" if results[:alerts].size > 0
-
     warning "Cluster rebalance status #{results[:rebalanceStatus]}" if results[:rebalanceStatus] != 'none'
+
+    if config[:couchbase_alerts]
+      critical "Cluster #{results[:alerts].size} alert(s)" if results[:alerts].size > 0
+    end
 
     ok "Nodes: #{results[:nodes].size}"
   end
