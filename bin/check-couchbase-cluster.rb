@@ -102,15 +102,15 @@ class CheckCouchbaseCluster < Sensu::Plugin::Check::CLI
     end
 
     nodes_unhealthy = results[:nodes].select { |node| node[:status] != 'healthy' }
-    critical "These nodes are not 'healthy': #{nodes_unhealthy.map { |node| node[:hostname] }}" if nodes_unhealthy.size > 0
+    critical "These nodes are 'unhealthy': #{nodes_unhealthy.map { |node| node[:hostname] }}" if nodes_unhealthy.size > 0
 
     nodes_unactive = results[:nodes].select { |node| node[:clusterMembership] != 'active' }
-    critical "These nodes are not 'active' in the cluster: #{nodes_unactive.map { |node| node[:hostname] }}" if nodes_unactive.size > 0
+    critical "These nodes are 'unactive' in the cluster: #{nodes_unactive.map { |node| node[:hostname] }}" if nodes_unactive.size > 0
 
     warning "Cluster rebalance status #{results[:rebalanceStatus]}" if results[:rebalanceStatus] != 'none'
 
     if config[:couchbase_alerts]
-      critical "Cluster #{results[:alerts].size} alert(s)" if results[:alerts].size > 0
+      critical "Cluster #{results[:alerts].size} alert(s) - #{results[:alerts]}" if results[:alerts].size > 0
     end
 
     ok "Nodes: #{results[:nodes].size}"
